@@ -6,7 +6,8 @@ import android.view.View;
 import android.widget.*;
 import androidx.appcompat.app.AppCompatActivity;
 
-public class CalculadoraActivity extends AppCompatActivity {
+public class CalculadoraActivity extends BaseActivity {
+    // Tela principal - calcula salário líquido com descontos
 
     private EditText edtNomeFuncionario, edtSalarioBruto, edtNumeroFilhos;
     private RadioGroup radioGroupSexo;
@@ -18,6 +19,7 @@ public class CalculadoraActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_calculadora);
 
+        // Encontra os componentes na tela
         edtNomeFuncionario = findViewById(R.id.edtNome);
         edtSalarioBruto = findViewById(R.id.edtSalario);
         edtNumeroFilhos = findViewById(R.id.edtNumeroFilhos);
@@ -25,73 +27,37 @@ public class CalculadoraActivity extends AppCompatActivity {
         btnCalcular = findViewById(R.id.btnCalcular);
         textResultado = findViewById(R.id.textResultado);
 
-        // Recuperar nome do usuário logado, se quiser pré preencher (opcional)
-        String nomeUsuario = getIntent().getStringExtra("nomeUsuario");
-        if(nomeUsuario != null){
-            edtNomeFuncionario.setText(nomeUsuario);
-        }
-
         btnCalcular.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
+                // Pega os valores digitados
                 String nomeFunc = edtNomeFuncionario.getText().toString().trim();
                 String salarioStr = edtSalarioBruto.getText().toString().trim();
                 String numFilhosStr = edtNumeroFilhos.getText().toString().trim();
 
                 int sexoId = radioGroupSexo.getCheckedRadioButtonId();
 
-                // Validações
+                // Validações dos campos
                 if (nomeFunc.isEmpty() || nomeFunc.length() > 80) {
-                    Toast.makeText(CalculadoraActivity.this, "Nome do funcionário inválido (máximo 80 caracteres)", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CalculadoraActivity.this, "Nome inválido", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 if (TextUtils.isEmpty(salarioStr)) {
-                    Toast.makeText(CalculadoraActivity.this, "Informe o salário bruto", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(CalculadoraActivity.this, "Informe o salário", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                double salarioBruto;
-                try {
-                    salarioBruto = Double.parseDouble(salarioStr);
-                } catch (NumberFormatException e) {
-                    Toast.makeText(CalculadoraActivity.this, "Salário inválido", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if (salarioBruto <= 0 || salarioBruto > 1_000_000) {
-                    Toast.makeText(CalculadoraActivity.this, "Salário deve ser maior que zero e menor ou igual a 1.000.000", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if (TextUtils.isEmpty(numFilhosStr)) {
-                    Toast.makeText(CalculadoraActivity.this, "Informe o número de filhos", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                int numeroFilhos;
-                try {
-                    numeroFilhos = Integer.parseInt(numFilhosStr);
-                } catch (NumberFormatException e) {
-                    Toast.makeText(CalculadoraActivity.this, "Número de filhos inválido", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                if (numeroFilhos < 0) {
-                    Toast.makeText(CalculadoraActivity.this, "Número de filhos não pode ser negativo", Toast.LENGTH_SHORT).show();
-                    return;
-                }
+                // Converte para números
+                double salarioBruto = Double.parseDouble(salarioStr);
+                int numeroFilhos = Integer.parseInt(numFilhosStr);
 
                 if (sexoId == -1) {
                     Toast.makeText(CalculadoraActivity.this, "Selecione o sexo", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
-                RadioButton rbSelecionado = findViewById(sexoId);
-                String sexo = rbSelecionado.getText().toString();
-
-                // Cálculo do INSS (taxa flat conforme faixa)
+                // Cálculo do INSS (desconto previdenciário)
                 double descontoINSS;
                 if (salarioBruto <= 1212.00) {
                     descontoINSS = salarioBruto * 0.075;
@@ -99,14 +65,11 @@ public class CalculadoraActivity extends AppCompatActivity {
                     descontoINSS = salarioBruto * 0.09;
                 } else if (salarioBruto <= 3641.03) {
                     descontoINSS = salarioBruto * 0.12;
-                } else if (salarioBruto <= 7087.22) {
-                    descontoINSS = salarioBruto * 0.14;
                 } else {
-                    // Caso ultrapasse teto INSS, desconto é sobre teto máximo
-                    descontoINSS = 7087.22 * 0.14;
+                    descontoINSS = salarioBruto * 0.14;
                 }
 
-                // Cálculo do IR (taxa flat conforme faixa)
+                // Cálculo do IR (imposto de renda)
                 double descontoIR;
                 if (salarioBruto <= 1903.98) {
                     descontoIR = 0;
@@ -114,22 +77,22 @@ public class CalculadoraActivity extends AppCompatActivity {
                     descontoIR = salarioBruto * 0.075;
                 } else if (salarioBruto <= 3751.05) {
                     descontoIR = salarioBruto * 0.15;
-                } else if (salarioBruto <= 4664.68) {
-                    descontoIR = salarioBruto * 0.225;
                 } else {
-                    descontoIR = salarioBruto * 0.275;  // Faixa acima de 4664,68 (adicionado para casos maiores)
+                    descontoIR = salarioBruto * 0.275;
                 }
 
-                // Salário-família
+                // Salário-família (benefício por filho)
                 double salarioFamilia = 0;
                 if (salarioBruto <= 1212.00) {
                     salarioFamilia = 56.47 * numeroFilhos;
                 }
 
-                // Salário líquido
+                // Cálculo final
                 double salarioLiquido = salarioBruto - descontoINSS - descontoIR + salarioFamilia;
 
-                // Montar resultado com tratamento Sr. ou Sra.
+                // Monta o resultado
+                RadioButton rbSelecionado = findViewById(sexoId);
+                String sexo = rbSelecionado.getText().toString();
                 String tratamento = sexo.equalsIgnoreCase("Masculino") ? "Sr." : "Sra.";
 
                 StringBuilder resultado = new StringBuilder();
@@ -145,7 +108,7 @@ public class CalculadoraActivity extends AppCompatActivity {
                 resultado.append(String.format("Salário Líquido: R$ %.2f", salarioLiquido));
 
                 textResultado.setText(resultado.toString());
-
-                // Opcional: se quiser limpar o formulário após cálculo, ou criar botão "Novo Cálculo"
             }
-        });}}
+        });
+    }
+}

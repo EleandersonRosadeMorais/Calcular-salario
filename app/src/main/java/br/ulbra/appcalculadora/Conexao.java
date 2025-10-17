@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 public class Conexao extends SQLiteOpenHelper {
+    // Configuração do banco de dados SQLite
 
     private static final String name = "banco.db";
     private static final int version = 1;
@@ -15,6 +16,7 @@ public class Conexao extends SQLiteOpenHelper {
 
     @Override
     public void onCreate(SQLiteDatabase db) {
+        // Cria tabela de usuários
         db.execSQL("CREATE TABLE pessoa (" +
                 "id INTEGER PRIMARY KEY AUTOINCREMENT," +
                 "nome VARCHAR(80)," +
@@ -24,6 +26,6 @@ public class Conexao extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        // Caso precise atualizar banco no futuro
+        // Atualiza estrutura do banco se necessário
     }
 }

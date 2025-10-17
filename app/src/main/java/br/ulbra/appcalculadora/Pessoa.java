@@ -3,11 +3,14 @@ package br.ulbra.appcalculadora;
 import java.io.Serializable;
 
 public class Pessoa implements Serializable {
+    // Modelo de dados - representa um usuário do sistema
+
     private Integer id;
     private String nome;
     private String email;
     private String senha;
 
+    // Getters e Setters - acesso aos atributos
     public Integer getId() { return id; }
     public void setId(Integer id) { this.id = id; }
 

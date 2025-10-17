@@ -13,7 +13,7 @@
         android:theme="@style/Theme.AppCalculadora">
 
         <activity
-            android:name=".LoginActivity"
+            android:name=".SplashActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -21,9 +21,10 @@
             </intent-filter>
         </activity>
 
+        <activity android:name=".MainActivity" android:exported="true" />
+        <activity android:name=".LoginActivity" android:exported="true" />
         <activity android:name=".RegisterActivity" android:exported="true" />
         <activity android:name=".CalculadoraActivity" android:exported="true" />
-        <!-- Se quiser usar MainActivity como router, adicione aqui também -->
 
     </application>
 
